@@ -1,4 +1,5 @@
 #ifndef MAINWINDOW_H
+
 #define MAINWINDOW_H
 #include <time.h>
 #include <QMainWindow>
@@ -6,6 +7,8 @@
 #include <Qpainter>
 #include <QTimer>
 #include <QDateTime>
+#include <QtGui>
+#include <QtWidgets>
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -19,80 +22,98 @@ class showWindow : public QWidget
 {
 	Q_OBJECT
 
-signals:
-	void sendScreenShot(cv::Mat& screenShot);
-	void toSetLabel(int i, QString);
-
-public slots:
-	void setScaleFactor(double S);
-	void setMinNeighbors(int N);
-	void setMinX(int x);
-	void setMinY(int y);
 	
 public:
 	showWindow(QWidget* parent);
 	~showWindow();
-	void showImage(cv::Mat& img );
-	void showAgainImage(cv::Mat& img);
-	void showVedio(cv::VideoCapture cap);
-	void showFrame();
-	void screenShot();
-	void stopVideo();
-	void showScreenShot(cv::Mat& screenShot);
-	void loadCamera();
-	void detectAndDisplay();
-	
-//protected:
-	//void:paintEvent(QPaintEvent *e);
+	void showImage(cv::Mat img ,int& colorMode);
 
 private:
-	cv::Mat frame;
-	cv::VideoCapture capture;
-	int ifShot;
-	QTimer* timer;
-	QTimer* timer2;
-	int rgb;
-	std::string face_cascade_name ;
-	double scaleFactor;
-	int minNeighbors; 
-	int minX;
-	int minY;
+	QLabel *label;
+	QImage qImg;
+};
+
+class Detection : public QWidget
+{
+	Q_OBJECT
+
+signals:
+	void sendScreenShot();
+	void toSetLabel(int i, QString);
+
+private:
+	cv::CascadeClassifier* face_cascade;
+
+public:
+	Detection(QWidget* parent);
+	~Detection();
+	bool detectFace(cv::Mat frame,double S, int N , int X, int Y);
+	cv::Mat rgbHist(cv::Mat frame);
 };
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
     
+public slots:
+	void setScaleFactor(double S);
+	void setMinNeighbors(int N);
+	void setMinX(int x);
+	void setMinY(int y);
+
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 	void setLabel(int i, QString str);
+	void openCamera();
+	void eachFrame();
+	void beginFaceDetect();
+	void beginScreenShot();
+    int colorMode;
+	cv::Mat frame;
 
-private slots:
-    void openFile();
-    void saveFile();
-    
 private:
+	//data for vedio
+	
+	
+	cv::VideoCapture capture;
+	QTimer* timer;
 
-	//QLabel *attr1;
+	//button actions
     QAction *openAction;
     QAction *saveAction;
 	QAction *screenShotAction;
 	QAction *stopAction;
 	QAction *startCameraAction;
+	QAction *detectFaceAction;
+	
+	//detecter
+	Detection *detecter;
 
+	//four windows
 	showWindow *view1;
 	showWindow *view2;
 	showWindow *view3;
 	showWindow *view4;
+
+	//labels
 	QLabel *attr1;
 	QLabel *attr2;
 	QLabel *attr3;
 	QLabel *attr4;
-	
-    QTextEdit *textEdit;
-};
 
+	//judge
+	bool ifDetectFace;
+	bool ifDetectRGBHist;
+	bool ifShot;
+
+	//
+	double S;
+	int N; 
+	int X;
+	int Y;
+	
+};
 
 
 
