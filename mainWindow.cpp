@@ -42,6 +42,14 @@ MainWindow::MainWindow(QWidget *parent) :
 	screenShotAction->setStatusTip(tr("Take a screenshot and save the picture"));
     connect(screenShotAction, &QAction::triggered, this, &MainWindow::beginScreenShot);
 
+	calcHist = new QAction(tr("&CalcHist..."), this);
+	calcHist->setStatusTip(tr("Calculate the histgram"));
+    connect(calcHist, &QAction::triggered, this, &MainWindow::beginCalcHist);
+
+	calcRGBHist = new QAction(tr("&CalcRGBHist..."), this);
+	calcRGBHist->setStatusTip(tr("Calculate the RGB histgram"));
+    connect(calcRGBHist, &QAction::triggered, this, &MainWindow::beginCalcRGBHist);
+
 	//stopAction = new QAction(tr("&Stop..."),this);
 	//stopAction -> setStatusTip(tr("Stop the video"));
 	//connect(stopAction, &QAction::triggered, view1, &Window::stopVideo);
@@ -60,6 +68,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	toolBar->addAction(startCameraAction);
 	toolBar->addAction(detectFaceAction);
 	toolBar->addAction(screenShotAction);
+	toolBar->addAction(calcHist);
+	toolBar->addAction(calcRGBHist);
 
 	//init labels
 	attr1 = new QLabel(tr("attr"));
@@ -119,28 +129,18 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(timer,&QTimer::timeout,this,&MainWindow::eachFrame);
 	//set bool
 	ifDetectFace = false;
-	ifDetectRGBHist = ifShot = false;
+	ifCalcHist = ifShot = ifCalcRGBHist =  false;
 
+	//set parameter for face detection
+	S = 1.2;
+	N=2;
+	X=30;
+	Y=30;
 }
 
 MainWindow::~MainWindow()
 {
-	delete timer;
-	/*delete openAction;
-	delete saveAction;
-	delete screenShotAction;
-	delete stopAction;
-	delete startCameraAction;
-	delete detectFaceAction;*/
-	delete detecter;
-	delete view1;
-	delete view2;
-	delete view3;
-	delete view4;
-	delete attr1;
-	delete attr2;
-	delete attr3;
-	delete attr4;
+
 
 }
 
@@ -188,19 +188,24 @@ void MainWindow::eachFrame()
 		ifShot = false;
 	}
 
+	if(ifCalcRGBHist)
+	{
+		view4->showImage(detecter->getRGBHistogramImage());
+	}
+
+	if(ifCalcHist)
+	{
+		view3->showGrayHistgram(detecter->getHistogramImage());
+	}
+
 	if(ifDetectFace)
 	{
-		detecter->detectFace();
+		detecter->detectFace(S,N,X,Y);
 		view1->showImage(detecter->getPic());
 	}
 	else
 	{
 		view1->showImage(detecter->getPic());
-	}
-
-	if(ifDetectRGBHist)
-	{
-
 	}
 
 	if(ifShot)
@@ -249,6 +254,16 @@ void MainWindow::beginFaceDetect()
 	ifDetectFace = !ifDetectFace;
 }
 
+void MainWindow::beginCalcHist()
+{
+	ifCalcHist  = !ifCalcHist;
+}
+
+void MainWindow::beginCalcRGBHist()
+{
+	ifCalcRGBHist = !ifCalcRGBHist;
+}
+
 void MainWindow::beginScreenShot()
 {
 	ifShot = true;
@@ -257,25 +272,25 @@ void MainWindow::beginScreenShot()
 void MainWindow::setScaleFactor(double S)
 {
 	S = S;
-
+	setLabel(1,QString::number(S));
 	
 }
 
 void MainWindow::setMinNeighbors(int N)
 {
 	N = N;
-	
+	setLabel(2,QString::number(N));
 }
 
 void MainWindow::setMinX(int X)
 {
 	X = X; 
-	
+	setLabel(3,QString::number(X));
 }
 
 void MainWindow::setMinY(int Y)
 {
 	Y = Y;
-	
+	setLabel(4,QString::number(Y));
 }
 

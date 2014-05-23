@@ -15,7 +15,8 @@ showWindow::~showWindow()
 }
 
 void showWindow::showImage(cv::Mat& img)
-{	
+{	 
+
 	qImg = QImage((const unsigned char*)(img.data),img.cols,img.rows,QImage::Format_RGB888);
 	label = new QLabel(this);
 	label->setScaledContents(true);
@@ -25,3 +26,13 @@ void showWindow::showImage(cv::Mat& img)
 	label->show();
 }
 
+void showWindow::showGrayHistgram(cv::Mat& img)
+{
+	qImg = QImage((const unsigned char*)(img.data),img.cols,img.rows,QImage::Format_Indexed8);
+	label = new QLabel(this);
+	label->setScaledContents(true);
+	//label->move(200, 50);  
+	label->setPixmap(QPixmap::fromImage(qImg));  
+	label->resize(320,240);      
+	label->show();
+}
